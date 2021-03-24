@@ -34,7 +34,7 @@ public class Main {
       boolean textDecrypted = false;
 
       for (char c : mostCommonLetters) {
-        int currentShift = 26 - Math.abs(c - mostCommonCharacter);
+        int currentShift = c - mostCommonCharacter;
         shiftedText = decryptCaesarCypher(cypherText, currentShift);
 
         if (doesTextContainRealWord(shiftedText)) {
@@ -87,13 +87,19 @@ public class Main {
     for (char c : cypherText.toCharArray()) {
       c += shift; //shift the character along the alphabet
       //if c has gone past Z, move it back 26 characters
-      if (c > 'Z') {
-        c -= 26;
+      if (c < 'A') {
+        c += 26;
       }
       shiftedText.append(c);
     }
 
     return shiftedText.toString();
+  }
+  
+  public static void decryptVigenereCypher(String cypherText, String key) {
+
+
+
   }
 
   /*
