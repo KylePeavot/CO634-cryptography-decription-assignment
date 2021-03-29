@@ -4,20 +4,43 @@
 package main;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import main.utils.CharUtils;
+import main.utils.CommonCharUtils;
+import main.utils.FrequencyUtils;
+import main.utils.WordUtils;
 
 public class Main {
 
-  //Retrieved from http://pi.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html
-  private static final char[] mostCommonLetters = new char[]{'E','T','A','O','I','N','S','H','R','D','L','C','U','M','W','F','G','Y','P','B','V','K','J','X','Q','Z'};
-  //The above array could have been generated using tess26.txt but I thought it would be more fun to tackle these tasks as if I had no idea what they would be decrypted into
-
   public static void main(String[] args) {
-    exercise1();
-    exercise2();
+    Instant start = Instant.now();
+
+//    exercise1();
+//    exercise2();
+//    exercise3();
+    List<String> list = new ArrayList<>();
+
+    for (int i = 0; i < 308915776; i++) {
+      list.add(Integer.toString(i, 26));
+    }
+
+
+    Instant end = Instant.now();
+
+    System.out.println("This took " + Duration.between(start, end).toMillis() + " milliseconds to decrypt");
   }
 
   public static void exercise1() {
@@ -28,16 +51,16 @@ public class Main {
       String cypherText = myReader.nextLine();
 
       //get most common character
-      char mostCommonCharacter = mostCommonCharacter(cypherText);
+      char mostCommonCharacter = FrequencyUtils.mostCommonCharacter(cypherText);
 
       String shiftedText = "";
       boolean textDecrypted = false;
 
-      for (char c : mostCommonLetters) {
+      for (char c : CommonCharUtils.mostCommonCharacters) {
         int currentShift = c - mostCommonCharacter;
-        shiftedText = decryptCaesarCypher(cypherText, currentShift);
+        shiftedText = CaesarCypher.decryptCaesarCypher(cypherText, currentShift);
 
-        if (doesTextContainRealWord(shiftedText)) {
+        if (WordUtils.doesTextContainRealWord(shiftedText)) {
           textDecrypted = true;
         }
 
@@ -55,115 +78,132 @@ public class Main {
 
   public static void exercise2() {
     try {
-      File exercise1 = new File("./src/resources/cypherTextFiles/cexercise2.txt");
-      Scanner myReader = new Scanner(exercise1);
+      File exercise2 = new File("./src/resources/cypherTextFiles/cexercise2.txt");
+      Scanner myReader = new Scanner(exercise2);
 
       String cypherText = myReader.nextLine();
 
+      String decryptedText = VigenereCypher.decryptVigenereCypher(cypherText, "TESSOFTHEDURBERVILLES");
 
+      printOutcome(decryptedText, true);
 
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
 
+  public static void exercise3() {
+    try {
+      //get the cypher text
+      File exercise2 = new File("./src/resources/cypherTextFiles/cexercise3.txt");
+      Scanner myReader = new Scanner(exercise2);
+      String cypherText = myReader.nextLine();
+      myReader.close();
 
+      int keySize = 6;
+
+      //Separate the cypher text into separate strings
+      List<String> separatedCypherText = VigenereCypher.splitCypherTextIntoSeparateStrings(cypherText, keySize);
+
+      //find the most common character in each string. This will be used to determine what character was used to encode each string
+      List<Character> mostCommonCharactersInCypherText = new ArrayList<>();
+      for (String s : separatedCypherText) {
+        mostCommonCharactersInCypherText.add(FrequencyUtils.mostCommonCharacter(s));
+      }
+
+      boolean isTextDecrypted = false;
+      String attemptedDecryption = "";
+      String keyGuess = "";
+
+      //Stores the (index of) the letter that each of the mostCommonCharactersInCypherText is being guessed as
+      int[] letterGuesses = new int[keySize];
+
+      //
+      int currentLetterGuessNumber = 0;
+      //used to limit the amount of letters we check
+      int currentMaxBase = 5;
+      HashSet<String> previousGuesses = new HashSet<>();
+
+      while (!isTextDecrypted && currentMaxBase <= 26) {
+        keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+
+        //attempt decryption
+        attemptedDecryption  = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
+
+        //add the common letter guess to set of previous guesses
+        //converted to a string so that previousGuesses.contains() works correctly
+        previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
+
+        if (WordUtils.doesTextContainRealWord(attemptedDecryption, 10)) { //if deciphered
+          isTextDecrypted = true;
+        } else if (WordUtils.doesTextContainPartialWords(attemptedDecryption)) { //if we're close to the solution
+          for (int i = 0; i < letterGuesses.length; i++) {
+            HashMap<Integer, Integer> amountOfWordsForEachLetter = new HashMap<>();
+            for (int commonLetterIndex = 0; commonLetterIndex < CommonCharUtils.mostCommonCharacters.length; commonLetterIndex++) {
+              //update this letter guess
+              letterGuesses[i] = commonLetterIndex;
+
+              //create a new key
+              keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+
+              //attempt decryption
+              attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
+
+              //add the attempted letter guesses to previousGuesses
+              previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
+
+              //put the amount of words this guess decrypted into the set
+              amountOfWordsForEachLetter.put(commonLetterIndex, WordUtils.getAmountOfPartialAndRealWords(attemptedDecryption));
+            }
+
+            Entry<Integer, Integer> highestAmountOfWords = amountOfWordsForEachLetter.entrySet().stream()
+                .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
+                .findFirst()
+                .get();
+
+            //replace the current letter guess with the new best letter guess
+            letterGuesses[i] = highestAmountOfWords.getKey();
+          }
+
+          keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+          attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
+          //if this text contains enough real words, then it is probably decrypted
+          if (WordUtils.doesTextContainRealWord(attemptedDecryption)) {
+            isTextDecrypted = true;
+          }
+        } else { //if not deciphered
+            while (previousGuesses.contains(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""))) {
+              //increment the number used to retrieve the common letter guesses
+              currentLetterGuessNumber++;
+              //If it's the max number in a base
+              if (currentLetterGuessNumber == Math.pow(currentMaxBase, keySize)) {
+                //increase the base
+                currentMaxBase++;
+                //reset the common letter guess
+                currentLetterGuessNumber = 0;
+              }
+
+              String newMostCommonLetterGuessesString = Integer.toString(currentLetterGuessNumber, currentMaxBase);
+
+              for (int i = newMostCommonLetterGuessesString.length() - 1; i >= 0; i--) {
+                int shift = letterGuesses.length - newMostCommonLetterGuessesString.length();
+                letterGuesses[i + shift] = newMostCommonLetterGuessesString.toCharArray()[i] - '0';
+              }
+            }
+
+//          System.out.println("Current keyGuess: " + keyGuess);
+//          System.out.println("Current common letter guess: " + Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
+//          System.out.println(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
+          }
+        }
+      printOutcome(attemptedDecryption, isTextDecrypted);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public static void printOutcome(String decryptedText, boolean success) {
     System.out.println("Decryption was a " + (success ? "success!" : "failure..."));
     System.out.println(decryptedText.substring(0, 30));
   }
-
-  /*
-    Shifts cypher text by a specified amount
-   */
-  public static String decryptCaesarCypher(String cypherText, int shift) {
-    cypherText = cypherText.toUpperCase(); //enforce cypher text is upper case
-
-    StringBuilder shiftedText = new StringBuilder();
-
-    shift = shift % 26; //no point doing extra shifts
-
-    for (char c : cypherText.toCharArray()) {
-      c += shift; //shift the character along the alphabet
-      //if c has gone past Z, move it back 26 characters
-      if (c < 'A') {
-        c += 26;
-      }
-      shiftedText.append(c);
-    }
-
-    return shiftedText.toString();
-  }
-  
-  public static void decryptVigenereCypher(String cypherText, String key) {
-
-
-
-  }
-
-  /*
-    Checks a scrolling window of 4 to 6 characters (avg length of top 5000 chars is 6.32) throughout the first 100 characters of the text
-    If 3 real words are found, the text has (probably) been decoded
-    If less than 3 real words found, text (almost certainly) has not been decoded
-   */
-  public static boolean doesTextContainRealWord(String textToCheck) {
-    int wordsFound = 0;
-    for (int i = 4; i <= 6; i++) { //the amount of chars to check
-      for (int currentCharStart = 0; currentCharStart < 101; currentCharStart++) {
-        if (isStringRealWord(textToCheck.substring(currentCharStart, currentCharStart + i).toLowerCase())) {
-          if (wordsFound++ > 5) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  /*
-    Checks if given string exists in top 10000 most common words
-    String must be single word
-   */
-  public static boolean isStringRealWord(String stringToCheck) {
-    try {
-      File commonWords = new File("./src/resources/statisticalHelpers/commonWords.txt");
-      Scanner myReader = new Scanner(commonWords);
-
-      while (myReader.hasNext()) {
-        if (stringToCheck.equals(myReader.nextLine())) {
-          return true;
-        }
-      }
-
-      return false;
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-      return false;
-    }
-  }
-
-  public static char mostCommonCharacter(String stringToAnalyse) {
-    return frequencyAnalysis(stringToAnalyse).entrySet().stream()
-        .sorted((o1, o2) -> {
-          if (o1.getValue() < o2.getValue()) return 1;
-          else if (o1.getValue() > o2.getValue()) return -1;
-          else return 0;
-        })
-        .map(Entry::getKey)
-        .findFirst().get();
-  }
-
-  public static HashMap<Character, Integer> frequencyAnalysis(String stringToAnalyse) {
-    HashMap<Character, Integer> frequencyMap = new HashMap<>();
-    for (char c : stringToAnalyse.toCharArray()) {
-      if (frequencyMap.containsKey(c)) {
-        frequencyMap.put(c, frequencyMap.get(c) + 1);
-      } else {
-        frequencyMap.put(c, 1);
-      }
-    }
-    return frequencyMap;
-  }
-
 }
