@@ -2,9 +2,12 @@ package main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import main.utils.CharUtils;
 import main.utils.CommonCharUtils;
+import main.utils.FrequencyUtils;
 
 public class VigenereCypher {
 
@@ -26,6 +29,8 @@ public class VigenereCypher {
 
     return decryptedText.toString();
   }
+
+//  public static String
 
 
   public static String createNewKeyGuess(List<Character> mostCommonCharactersForStrings, int[] letterGuesses) {
@@ -58,31 +63,20 @@ public class VigenereCypher {
   }
 
   public static int workOutKeySize(String cypherText, int minKeySize, int maxKeySize) {
-    char[] cypherTextCharArray = cypherText.toCharArray();
-    //The distance between each letter and A. The number doesn't have any meaning but if the same sequence of numbers is detected, then that is the key length
-    int[] lettersInStringAsNumbers = new int[cypherText.length() % 100];
+    HashMap<Character, Integer> charactersByFrequency =  FrequencyUtils.frequencyAnalysis(cypherText);
 
-    for (int i = 0; i < cypherText.length() % 100; i++) {
-      lettersInStringAsNumbers[i] = cypherTextCharArray[i] - 'A';
-    }
+    for (int i = minKeySize; i < maxKeySize; i++) {
+      //for each potential key size
+      //split cypher text into List<String>
+      //calculate index of coincidence for each string
+      //calculate the average of all ioc
+      //once done, find the ioc closest to 1.73
 
-    for (int i = minKeySize; i < maxKeySize; i++) { //for all key lengths between minKeySize and maxKeySize
-      for (int j = 0; j <= i; j++) { //check the current guess at the key length
-        int[] keyGuessA = new int[i];
-        int[] keyGuessB = new int[i];
 
-        for (int k = 0; k < j; k++) { //load the sequences into both arrays
-          keyGuessA[k] = lettersInStringAsNumbers[k];
-          keyGuessB[k] = lettersInStringAsNumbers[k + j];
-        }
-
-        if (Arrays.equals(keyGuessA, keyGuessB)) { //if they match then the key size is found
-          return j; //return the current guess
-        }
-      }
     }
 
     // if no key size is found
+    System.out.println("No key size found");
     return -1;
   }
 }

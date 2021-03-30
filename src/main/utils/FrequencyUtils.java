@@ -1,11 +1,16 @@
 package main.utils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class FrequencyUtils {
+
+  public static final String beeMovieScript = getBeeMovieScript();
 
   public static char mostCommonCharacter(String stringToAnalyse) {
     return charactersByFrequency(stringToAnalyse).get(0);
@@ -34,4 +39,12 @@ public class FrequencyUtils {
     return frequencyMap;
   }
 
+  public static String getBeeMovieScript() {
+    try {
+      return Files.readString(Path.of("./src/resources/statisticalHelpers/beeMovieScript.txt"));
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
 }
