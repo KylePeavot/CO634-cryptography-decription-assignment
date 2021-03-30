@@ -1,5 +1,7 @@
 package main.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class WordUtils {
@@ -81,6 +83,22 @@ public class WordUtils {
       }
     }
     return wordsFound;
+  }
+
+  public static List<String> splitCypherTextIntoSeparateStrings(String stringToSplit, int amountOfLists) {
+    var strings = new ArrayList<String>();
+
+    for (int i = 0; i < amountOfLists; i++) {
+      strings.add("");
+    }
+
+    var charArrayToSplit = stringToSplit.toCharArray();
+
+    for (int currentCharIndex = 0; currentCharIndex < stringToSplit.length(); currentCharIndex++) {
+      strings.set(currentCharIndex % amountOfLists, strings.get(currentCharIndex % amountOfLists) + charArrayToSplit[currentCharIndex]);
+    }
+
+    return strings;
   }
 
 }

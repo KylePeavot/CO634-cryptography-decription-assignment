@@ -4,34 +4,29 @@
 package main;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.stream.Collectors;
-import main.utils.CharUtils;
 import main.utils.CommonCharUtils;
 import main.utils.FrequencyUtils;
 import main.utils.WordUtils;
 
 public class Main {
 
+  //TODO ensure all methods commented
   public static void main(String[] args) {
     Instant start = Instant.now();
 
 //    exercise1();
 //    exercise2();
 //    exercise3();
-    exercise4();
+//    exercise4();
 
     Instant end = Instant.now();
 
@@ -87,6 +82,7 @@ public class Main {
     }
   }
 
+  //TODO tidy up
   public static void exercise3() {
     try {
       //get the cypher text
@@ -98,7 +94,7 @@ public class Main {
       int keySize = 6;
 
       //Separate the cypher text into separate strings
-      List<String> separatedCypherText = VigenereCypher.splitCypherTextIntoSeparateStrings(cypherText, keySize);
+      List<String> separatedCypherText = WordUtils.splitCypherTextIntoSeparateStrings(cypherText, keySize);
 
       //find the most common character in each string. This will be used to determine what character was used to encode each string
       List<Character> mostCommonCharactersInCypherText = new ArrayList<>();
@@ -201,10 +197,10 @@ public class Main {
       String cypherText = myReader.nextLine();
       myReader.close();
 
-      int keySize = VigenereCypher.workOutKeySize(cypherText, 4, 6);
+      int keySize = VigenereCypher.workOutKeySizeForVigenere(cypherText, 4, 6);
 
       //Separate the cypher text into separate strings
-      List<String> separatedCypherText = VigenereCypher.splitCypherTextIntoSeparateStrings(cypherText, keySize);
+      List<String> separatedCypherText = WordUtils.splitCypherTextIntoSeparateStrings(cypherText, keySize);
 
       //find the most common character in each string. This will be used to determine what character was used to encode each string
       List<Character> mostCommonCharactersInCypherText = new ArrayList<>();

@@ -10,13 +10,14 @@ import java.util.stream.Collectors;
 
 public class FrequencyUtils {
 
-  public static final String beeMovieScript = getBeeMovieScript();
+  public static final String BEE_MOVIE_SCRIPT = getBeeMovieScript();
+  public static final double BEE_MOVIE_SCRIPT_IOC = calculateIndexOfCoincidence(BEE_MOVIE_SCRIPT);
 
   public static char mostCommonCharacter(String stringToAnalyse) {
-    return charactersByFrequency(stringToAnalyse).get(0);
+    return charsOrderedByFrequency(stringToAnalyse).get(0);
   }
 
-  public static List<Character> charactersByFrequency(String stringToAnalyse) {
+  public static List<Character> charsOrderedByFrequency(String stringToAnalyse) {
     return frequencyAnalysis(stringToAnalyse).entrySet().stream()
         .sorted((o1, o2) -> {
           if (o1.getValue() < o2.getValue()) return 1;
@@ -37,6 +38,18 @@ public class FrequencyUtils {
       }
     }
     return frequencyMap;
+  }
+
+  public static double calculateIndexOfCoincidence(String text) {
+    HashMap<Character, Integer> charsByFrequency = frequencyAnalysis(text);
+    double indexOfCoincidence = 0.0;
+    for (Integer frequencyOfCharacter : charsByFrequency.values()) {
+      indexOfCoincidence += (frequencyOfCharacter * (frequencyOfCharacter - 1));
+    }
+
+    indexOfCoincidence = indexOfCoincidence / (text.length() * (text.length() - 1));
+
+    return indexOfCoincidence;
   }
 
   public static String getBeeMovieScript() {

@@ -1,13 +1,12 @@
 package main;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import main.utils.CharUtils;
 import main.utils.CommonCharUtils;
 import main.utils.FrequencyUtils;
+import main.utils.WordUtils;
 
 public class VigenereCypher {
 
@@ -30,9 +29,6 @@ public class VigenereCypher {
     return decryptedText.toString();
   }
 
-//  public static String
-
-
   public static String createNewKeyGuess(List<Character> mostCommonCharactersForStrings, int[] letterGuesses) {
     String newKeyGuess = "";
     for (int i = 0; i < mostCommonCharactersForStrings.size(); i++) {
@@ -44,39 +40,27 @@ public class VigenereCypher {
     return newKeyGuess;
   }
 
-  public static List<String> splitCypherTextIntoSeparateStrings(String stringToSplit, int amountOfLists) {
-    var strings = new ArrayList<String>();
-    strings.add(0, "");
-    strings.add(1, "");
-    strings.add(2, "");
-    strings.add(3, "");
-    strings.add(4 , "");
-    strings.add(5, "");
+  public static int workOutKeySizeForVigenere(String cypherText, int minKeySize, int maxKeySize) {
+    double currentBestIOC = 0.0;
+    int keySizeWithBestIOC = 0;
 
-    var charArrayToSplit = stringToSplit.toCharArray();
+    for (int i = minKeySize; i <= maxKeySize; i++) {
+      //Split the cypherText into separate strings by the current guess at the key size
+      List<String> splitText = WordUtils.splitCypherTextIntoSeparateStrings(cypherText, i);
+      double averageIndexOfCoincidence = 0.0;
 
-    for (int currentCharIndex = 0; currentCharIndex < stringToSplit.length(); currentCharIndex++) {
-      strings.set(currentCharIndex % 6, strings.get(currentCharIndex % 6) + charArrayToSplit[currentCharIndex]);
+      //calculate index of coincidence for each string and then average it
+      for (String s : splitText) {
+        averageIndexOfCoincidence += FrequencyUtils.calculateIndexOfCoincidence(s);
+      }
+      averageIndexOfCoincidence = averageIndexOfCoincidence / i;
+
+      //If the new index of coincidence is closer to a "normal" index of coincidence, then replace the best IOC values with the new ones
+      if (Math.abs(averageIndexOfCoincidence - FrequencyUtils.BEE_MOVIE_SCRIPT_IOC) < Math.abs(currentBestIOC - FrequencyUtils.BEE_MOVIE_SCRIPT_IOC)) {
+        currentBestIOC = averageIndexOfCoincidence;
+        keySizeWithBestIOC = i;
+      }
     }
-
-    return strings;
-  }
-
-  public static int workOutKeySize(String cypherText, int minKeySize, int maxKeySize) {
-    HashMap<Character, Integer> charactersByFrequency =  FrequencyUtils.frequencyAnalysis(cypherText);
-
-    for (int i = minKeySize; i < maxKeySize; i++) {
-      //for each potential key size
-      //split cypher text into List<String>
-      //calculate index of coincidence for each string
-      //calculate the average of all ioc
-      //once done, find the ioc closest to 1.73
-
-
-    }
-
-    // if no key size is found
-    System.out.println("No key size found");
-    return -1;
+    return keySizeWithBestIOC;
   }
 }
