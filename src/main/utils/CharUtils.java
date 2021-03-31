@@ -17,4 +17,5 @@ public class CharUtils {
 
     return characterToShift;
   }
+
 }

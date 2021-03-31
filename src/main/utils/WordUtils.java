@@ -86,16 +86,40 @@ public class WordUtils {
   }
 
   public static List<String> splitCypherTextIntoSeparateStrings(String stringToSplit, int amountOfLists) {
-    var strings = new ArrayList<String>();
-
+    List<String> strings = new ArrayList<>();
     for (int i = 0; i < amountOfLists; i++) {
       strings.add("");
     }
 
     var charArrayToSplit = stringToSplit.toCharArray();
 
+    //for all the characters in stringToSplit
     for (int currentCharIndex = 0; currentCharIndex < stringToSplit.length(); currentCharIndex++) {
-      strings.set(currentCharIndex % amountOfLists, strings.get(currentCharIndex % amountOfLists) + charArrayToSplit[currentCharIndex]);
+      //add the current character to the correct list
+      strings.set(
+          currentCharIndex % amountOfLists,
+          //get the current value in the list and append the new character to it
+          strings.get(currentCharIndex % amountOfLists) + charArrayToSplit[currentCharIndex]
+      );
+    }
+
+    return strings;
+  }
+
+  public static List<String> splitCypherTextColumnWise(String stringToSplit, int numOfColumns) {
+    int sizeOfNewStrings = stringToSplit.length() / numOfColumns;
+
+    List<String> strings = new ArrayList<>();
+    for (int i = 0; i < numOfColumns; i++) {
+      strings.add("");
+    }
+
+    var charArrayToSplit = stringToSplit.toCharArray();
+
+    for (int i = 0; i < numOfColumns; i++) {
+      for (int j = 0; j < sizeOfNewStrings; j++) {
+        strings.set(i, strings.get(i) + charArrayToSplit[(i * sizeOfNewStrings) + j]);
+      }
     }
 
     return strings;
