@@ -8,9 +8,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import main.utils.CharUtils;
@@ -29,13 +31,18 @@ public class Main {
 //    exercise2();
 //    exercise3();
 //    exercise4();
-    exercise5();
+//    exercise5();
+//    exercise6(); //TODO
+    exercise7();
 
     Instant end = Instant.now();
 
     System.out.println("This took " + Duration.between(start, end).toMillis() + " milliseconds to decrypt");
   }
 
+  /**
+   * text is encoded with Caesar cipher
+   */
   public static void exercise1() {
     String cypherText = getExerciseCypherText(1);
 
@@ -61,6 +68,9 @@ public class Main {
     printOutcome(shiftedText, textDecrypted);
   }
 
+  /**
+   * text is encoded with Vigenere cipher where the key used is 'TESSOFTHEDURBERVILLES'
+   */
   public static void exercise2() {
     String cypherText = getExerciseCypherText(2);
 
@@ -69,6 +79,9 @@ public class Main {
     printOutcome(decryptedText, true);
   }
 
+  /**
+   * text is encoded with Vigenere cipher where the key used is an arbitrary combination of 6 characters
+   */
   //TODO tidy up
   public static void exercise3() {
     //get the cypher text
@@ -169,6 +182,9 @@ public class Main {
     printOutcome(attemptedDecryption, isTextDecrypted);
   }
 
+  /**
+   * text is encoded with Vigenere cipher where the key used is an arbitrary combination of 4 to 6 characters
+   */
   public static void exercise4() {
     String cypherText = getExerciseCypherText(4);
 
@@ -267,6 +283,9 @@ public class Main {
     printOutcome(attemptedDecryption, isTextDecrypted);
   }
 
+  /**
+   * text is encoded with transposition cipher where the text is encoded by reading the columns from left to right. The number of columns is either 4, 5, or 6
+   */
   public static void exercise5() {
     String cypherText = getExerciseCypherText(5);
 
@@ -294,6 +313,89 @@ public class Main {
 
     printOutcome(decryptedText, isTextDecrypted);
 
+  }
+
+  /**
+   * text is encoded with transposition cipher where the text is encoded with a 6 character long key and encoded normally
+   */
+  public static void exercise6() {
+    String cypherText = getExerciseCypherText(6);
+
+    String decryptedText = "";
+    boolean isTextDecrypted = false;
+
+    int keySize = 6;
+    String keyGuess = "";
+
+    while (!isTextDecrypted) {
+
+      decryptedText = TranspositionCipher.decrypt(cypherText, keyGuess);
+
+      if (WordUtils.doesTextContainRealWord(decryptedText)) {
+        isTextDecrypted = true;
+      } else {
+
+
+      }
+    }
+
+    printOutcome(decryptedText, isTextDecrypted);
+
+  }
+
+  /**
+   * text is encoded with a general substitution cypher
+   */
+  public static void exercise7() {
+    String cypherText = getExerciseCypherText(7);
+
+    List<Character> charsInEnglishByFrequency = CommonCharUtils.getMostCommonCharactersWithSpaceToList();
+    List<Character> charsInCypherTextByFrequency = FrequencyUtils.charsOrderedByFrequency(cypherText);
+
+    HashMap<Character, Character> cypherCharToPlainChar = new HashMap<>();
+
+    for (int i = 0; i < charsInCypherTextByFrequency.size(); i++) {
+      cypherCharToPlainChar.put(charsInCypherTextByFrequency.get(i), charsInEnglishByFrequency.get(i));
+    }
+
+    String decryptedText = "";
+    boolean isTextDecrypted = false;
+    HashSet<Character> correctCharacters = new HashSet<>();
+
+
+    while (!isTextDecrypted) {
+      //attempt decryption
+      decryptedText = SubstitutionCypher.decrypt(cypherText, cypherCharToPlainChar);
+
+      if (WordUtils.doesTextContainRealWord(decryptedText, 5)) {
+        isTextDecrypted = true;
+        break;
+      }
+
+      //get a map of the two letters to swap mappings for
+      Entry<Character, Character> charsToSwap = SubstitutionCypher.findCharactersToSwap(decryptedText, correctCharacters);
+
+      //find the char that maps to N
+      char charToSwap = cypherCharToPlainChar.entrySet().stream()
+          .filter(entry -> entry.getValue() == charsToSwap.getKey())
+          .findFirst()
+          .get()
+          .getKey();
+      //find the char that maps to H
+      char otherCharToSwap = cypherCharToPlainChar.entrySet().stream()
+          .filter(entry -> entry.getValue() == charsToSwap.getValue())
+          .findFirst()
+          .get()
+          .getKey();
+
+      cypherCharToPlainChar.put(charToSwap, charsToSwap.getValue());
+      cypherCharToPlainChar.put(otherCharToSwap, charsToSwap.getKey());
+
+      //add charsToSwap.getValue to a list to track all chars that are definitely correct
+      correctCharacters.add(charsToSwap.getValue());
+    }
+
+    printOutcome(decryptedText, isTextDecrypted);
   }
 
   public static void printOutcome(String decryptedText, boolean success) {

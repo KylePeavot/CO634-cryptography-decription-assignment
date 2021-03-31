@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 
 public class CommonWordsUtils {
 
-  public static final List<String> commonWords = getCommonWordsFromFile();
+  public static final List<String> COMMON_WORDS = getCommonWordsFromFile();
+  public static final List<String> COMMON_WORDS_HALF = getHalfOfCommonWordsFromFile();
 
-  public static List<String> getCommonWordsFromFile() {
+  public static List<String> getHalfOfCommonWordsFromFile() {
     try {
       return Files.readAllLines(Path.of("./src/resources/statisticalHelpers/commonWords.txt")).stream()
           .filter(s -> s.length() > 1)
@@ -20,5 +21,19 @@ public class CommonWordsUtils {
       e.printStackTrace();
       return null;
     }
+  }
+  public static List<String> getCommonWordsFromFile() {
+    try {
+      return Files.readAllLines(Path.of("./src/resources/statisticalHelpers/commonWords.txt")).stream()
+          .filter(s -> s.length() > 1)
+          .collect(Collectors.toList());
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  public static List<String> getCommonWordsGreaterThanLength(int length) {
+    return COMMON_WORDS.stream().filter(s -> s.length() > length).collect(Collectors.toList());
   }
 }

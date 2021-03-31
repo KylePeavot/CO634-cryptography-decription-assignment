@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class FrequencyUtils {
 
   public static final String BEE_MOVIE_SCRIPT = getBeeMovieScript();
+  public static final String BEE_MOVIE_SCRIPT_WITH_SPACES = getBeeMovieScriptWithSpaces();
   public static final double BEE_MOVIE_SCRIPT_IOC = calculateIndexOfCoincidence(BEE_MOVIE_SCRIPT);
 
   public static char mostCommonCharacter(String stringToAnalyse) {
@@ -55,6 +56,15 @@ public class FrequencyUtils {
   public static String getBeeMovieScript() {
     try {
       return Files.readString(Path.of("./src/resources/statisticalHelpers/beeMovieScript.txt"));
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  public static String getBeeMovieScriptWithSpaces() {
+    try {
+      return Files.readString(Path.of("./src/resources/statisticalHelpers/beeMovieScriptWithSpaces.txt"));
     } catch (IOException e) {
       e.printStackTrace();
       return null;

@@ -81,10 +81,10 @@ public class TranspositionCipher {
 
   private static Integer findLowestDuplicate(List<Integer> integers) {
     Set<Integer> setToReturn = new HashSet<>();
-    Set<Integer> set1 = new HashSet<>();
+    Set<Integer> setToNotReturn = new HashSet<>();
 
     for (Integer i: integers) { //for all the ints
-      if (!set1.add(i)) { //attempt to add the current int to the set, if it already exists in the set, Set.add returns false
+      if (!setToNotReturn.add(i)) { //attempt to add the current int to the set, if it already exists in the set, Set.add returns false
         setToReturn.add(i); //if the int is already in the other set, add it to this set
       }
     }

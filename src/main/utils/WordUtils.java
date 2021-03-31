@@ -1,6 +1,7 @@
 package main.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class WordUtils {
 
   public static boolean isStringPartOfRealWord(String stringToCheck) {
     //too many 2 letter words where being found and making the count a bit too incorrect
-    for (String s : CommonWordsUtils.commonWords.stream().filter(s -> s.length() > 2).collect(Collectors.toList())) {
+    for (String s : CommonWordsUtils.COMMON_WORDS_HALF.stream().filter(s -> s.length() > 2).collect(Collectors.toList())) {
       if (s.contains(stringToCheck)) {
         return true;
       }
@@ -60,7 +61,7 @@ public class WordUtils {
     String must be single word
    */
   public static boolean isStringRealWord(String stringToCheck) {
-    for (String s : CommonWordsUtils.commonWords) {
+    for (String s : CommonWordsUtils.COMMON_WORDS_HALF) {
       if (stringToCheck.equals(s)) {
         return true;
       }
@@ -123,6 +124,17 @@ public class WordUtils {
     }
 
     return strings;
+  }
+
+  public static List<String> findCorrectWordsInString(String stringToSearch) {
+    List<String> stringToSearchList = Arrays.asList(stringToSearch.split(" "));
+    List<String> commonWordsFound = new ArrayList<>();
+    for (String s : CommonWordsUtils.getCommonWordsGreaterThanLength(2)) {
+      if (stringToSearchList.contains(s.toUpperCase())) {
+        commonWordsFound.add(s);
+      }
+    }
+    return commonWordsFound;
   }
 
 }
