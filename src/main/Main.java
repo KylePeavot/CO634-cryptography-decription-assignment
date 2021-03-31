@@ -8,14 +8,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import main.utils.CharUtils;
+import java.util.stream.Collectors;
 import main.utils.CommonCharUtils;
 import main.utils.FrequencyUtils;
 import main.utils.WordUtils;
@@ -32,7 +30,7 @@ public class Main {
 //    exercise3();
 //    exercise4();
 //    exercise5();
-//    exercise6(); //TODO
+//    exercise6();
     exercise7();
 
     Instant end = Instant.now();
@@ -325,20 +323,36 @@ public class Main {
     boolean isTextDecrypted = false;
 
     int keySize = 6;
-    String keyGuess = "";
+    char[] bruteForceArray = new char[6];
 
-    while (!isTextDecrypted) {
-
-      decryptedText = TranspositionCipher.decrypt(cypherText, keyGuess);
-
-      if (WordUtils.doesTextContainRealWord(decryptedText)) {
-        isTextDecrypted = true;
-      } else {
-
-
-      }
+    for (int i = 0; i < keySize; i++) {
+      bruteForceArray[i] = (char) ('A' + i);
     }
 
+    //CCABAF
+    int maxCombinations = (int) Math.pow(keySize, keySize);
+    for (int i = 9000; i < maxCombinations; i++) {
+      StringBuilder keyGuess = new StringBuilder();
+      List<Integer> newKey = new ArrayList<>();
+      List<Integer> newNum = Integer.toString(i, 6).chars().mapToObj(value -> value - '0').collect(Collectors.toList());
+
+      for (int j = 0; j < (keySize - newNum.size()); j++) {
+        newKey.add(0);
+      }
+
+      newKey.addAll(newNum);
+
+      for (Integer index : newKey) {
+        keyGuess.append(bruteForceArray[index]);
+      }
+
+      decryptedText = TranspositionCipher.decrypt(cypherText, keyGuess.toString());
+
+      if (WordUtils.doesTextContainRealWord(decryptedText, 10)) {
+        isTextDecrypted = true;
+        break;
+      }
+    }
     printOutcome(decryptedText, isTextDecrypted);
 
   }
@@ -347,7 +361,7 @@ public class Main {
    * text is encoded with a general substitution cypher
    */
   public static void exercise7() {
-    String cypherText = getExerciseCypherText(7);
+    String cypherText = getExerciseCypherText(6);
 
     List<Character> charsInEnglishByFrequency = CommonCharUtils.getMostCommonCharactersWithSpaceToList();
     List<Character> charsInCypherTextByFrequency = FrequencyUtils.charsOrderedByFrequency(cypherText);
@@ -363,7 +377,7 @@ public class Main {
     HashSet<Character> correctCharacters = new HashSet<>();
 
 
-    while (!isTextDecrypted) {
+    while (!isTextDecrypted && correctCharacters.size() < 26) {
       //attempt decryption
       decryptedText = SubstitutionCypher.decrypt(cypherText, cypherCharToPlainChar);
 

@@ -40,9 +40,9 @@ public class TranspositionCipher {
     //for max length in separatedCipher
     //for each char in key
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < cipherChunkByKey.get(0).size(); i++) { //max length in split text
-      for (int j = 0; j < cipherChunkByKey.size(); j++) {//each list in split text
-        sb.append(cipherChunkByKey.get(j).get(i)); //
+    for (int i = 0; i < cipherChunkByKey.values().iterator().next().size(); i++) { //max length in split text
+      for (List<Character> characters : cipherChunkByKey.values()) {//each list in split text
+        sb.append(characters.get(i)); //
       }
     }
 
