@@ -361,7 +361,7 @@ public class Main {
    * text is encoded with a general substitution cypher
    */
   public static void exercise7() {
-    String cypherText = getExerciseCypherText(6);
+    String cypherText = getExerciseCypherText(7);
 
     List<Character> charsInEnglishByFrequency = CommonCharUtils.getMostCommonCharactersWithSpaceToList();
     List<Character> charsInCypherTextByFrequency = FrequencyUtils.charsOrderedByFrequency(cypherText);

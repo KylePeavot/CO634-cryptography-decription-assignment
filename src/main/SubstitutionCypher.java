@@ -28,7 +28,7 @@ public class SubstitutionCypher {
   //  function looks through common words and tries to find word that has n-1/n letters in the word
   //  return Map<Letter currently in word, letter to be replaced to make word>
   public static Entry<Character, Character> findCharactersToSwap(String attemptedDecryption, HashSet<Character> correctCharacters) {
-    List<String> attemptedDecryptionAsList = Arrays.asList(attemptedDecryption.split(" "));
+    List<String> attemptedDecryptionAsList = Arrays.asList(attemptedDecryption.split("\\|"));
 
     for (String commonWord : CommonWordsUtils.getCommonWordsGreaterThanLength(3)) {
       for (String partlyCorrectWord : attemptedDecryptionAsList) {

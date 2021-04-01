@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 public class FrequencyUtils {
 
   public static final String BEE_MOVIE_SCRIPT = getBeeMovieScript();
-  public static final String BEE_MOVIE_SCRIPT_WITH_SPACES = getBeeMovieScriptWithSpaces();
   public static final double BEE_MOVIE_SCRIPT_IOC = calculateIndexOfCoincidence(BEE_MOVIE_SCRIPT);
 
   public static char mostCommonCharacter(String stringToAnalyse) {
