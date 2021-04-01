@@ -25,12 +25,12 @@ public class Main {
   public static void main(String[] args) {
     Instant start = Instant.now();
 
-//    exercise1();
-//    exercise2();
-//    exercise3();
-//    exercise4();
-//    exercise5();
-//    exercise6();
+    exercise1();
+    exercise2();
+    exercise3();
+    exercise4();
+    exercise5();
+    exercise6(); //Warning: long due to brute force
     exercise7();
 
     Instant end = Instant.now();
@@ -44,16 +44,19 @@ public class Main {
   public static void exercise1() {
     String cypherText = getExerciseCypherText(1);
 
-    //get most common character
+    //get most common character in the cipher text
     char mostCommonCharacter = FrequencyUtils.mostCommonCharacter(cypherText);
 
     String shiftedText = "";
     boolean textDecrypted = false;
 
+    //for each letter in the alphabet from most common to least
     for (char c : CommonCharUtils.mostCommonCharacters) {
+      //calculate the current shift needed to shift the most common character in the cipher text to the current most common character
       int currentShift = c - mostCommonCharacter;
       shiftedText = CaesarCypher.decryptCaesarCypher(cypherText, currentShift);
 
+      //if decrypted, then set flag
       if (WordUtils.doesTextContainRealWord(shiftedText)) {
         textDecrypted = true;
       }
@@ -62,7 +65,7 @@ public class Main {
         break;
       }
     }
-
+    //print the outcome
     printOutcome(shiftedText, textDecrypted);
   }
 
@@ -72,8 +75,10 @@ public class Main {
   public static void exercise2() {
     String cypherText = getExerciseCypherText(2);
 
+    //simply attempt decryption with the given key
     String decryptedText = VigenereCypher.decryptVigenereCypher(cypherText, "TESSOFTHEDURBERVILLES");
 
+    //assume true because if not successful, something has gone horribly wrong
     printOutcome(decryptedText, true);
   }
 
@@ -96,87 +101,45 @@ public class Main {
       mostCommonCharactersInCypherText.add(FrequencyUtils.mostCommonCharacter(s));
     }
 
+    //the flag
     boolean isTextDecrypted = false;
+    //the current attempt at decryption
     String attemptedDecryption = "";
+    //the current guess as to what the key is
     String keyGuess = "";
 
     //Stores the (index of) the letter that each of the mostCommonCharactersInCypherText is being guessed as
     int[] letterGuesses = new int[keySize];
 
-    //
-    int currentLetterGuessNumber = 0;
-    //used to limit the amount of letters we check
-    int currentMaxBase = 5;
-    HashSet<String> previousGuesses = new HashSet<>();
+    for (int i = 0; i < letterGuesses.length; i++) {
+      HashMap<Integer, Integer> amountOfWordsForEachLetter = new HashMap<>();
+      for (int commonLetterIndex = 0; commonLetterIndex < CommonCharUtils.mostCommonCharacters.length; commonLetterIndex++) {
+        //update this letter guess
+        letterGuesses[i] = commonLetterIndex;
 
-    while (!isTextDecrypted && currentMaxBase <= 26) {
-      keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
-
-      //attempt decryption
-      attemptedDecryption  = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-
-      //add the common letter guess to set of previous guesses
-      //converted to a string so that previousGuesses.contains() works correctly
-      previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
-
-      if (WordUtils.doesTextContainRealWord(attemptedDecryption, 10)) { //if deciphered
-        isTextDecrypted = true;
-      } else if (WordUtils.doesTextContainPartialWords(attemptedDecryption)) { //if we're close to the solution
-        for (int i = 0; i < letterGuesses.length; i++) {
-          HashMap<Integer, Integer> amountOfWordsForEachLetter = new HashMap<>();
-          for (int commonLetterIndex = 0; commonLetterIndex < CommonCharUtils.mostCommonCharacters.length; commonLetterIndex++) {
-            //update this letter guess
-            letterGuesses[i] = commonLetterIndex;
-
-            //create a new key
-            keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
-
-            //attempt decryption
-            attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-
-            //add the attempted letter guesses to previousGuesses
-            previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
-
-            //put the amount of words this guess decrypted into the set
-            amountOfWordsForEachLetter.put(commonLetterIndex, WordUtils.getAmountOfPartialAndRealWords(attemptedDecryption));
-          }
-
-          Entry<Integer, Integer> highestAmountOfWords = amountOfWordsForEachLetter.entrySet().stream()
-              .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
-              .findFirst()
-              .get();
-
-          //replace the current letter guess with the new best letter guess
-          letterGuesses[i] = highestAmountOfWords.getKey();
-        }
-
+        //create a new key
         keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+
+        //attempt decryption
         attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-        //if this text contains enough real words, then it is probably decrypted
-        if (WordUtils.doesTextContainRealWord(attemptedDecryption)) {
-          isTextDecrypted = true;
-        }
-      } else { //if not deciphered
-          while (previousGuesses.contains(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""))) {
-            //increment the number used to retrieve the common letter guesses
-            currentLetterGuessNumber++;
-            //If it's the max number in a base
-            if (currentLetterGuessNumber == Math.pow(currentMaxBase, keySize)) {
-              //increase the base
-              currentMaxBase++;
-              //reset the common letter guess
-              currentLetterGuessNumber = 0;
-            }
 
-            String newMostCommonLetterGuessesString = Integer.toString(currentLetterGuessNumber, currentMaxBase);
-
-            for (int i = newMostCommonLetterGuessesString.length() - 1; i >= 0; i--) {
-              int shift = letterGuesses.length - newMostCommonLetterGuessesString.length();
-              letterGuesses[i + shift] = newMostCommonLetterGuessesString.toCharArray()[i] - '0';
-            }
-          }
-        }
+        //put the amount of words this guess decrypted into the set
+        amountOfWordsForEachLetter.put(commonLetterIndex, WordUtils.getAmountOfPartialAndRealWords(attemptedDecryption));
       }
+
+      Entry<Integer, Integer> highestAmountOfWords = amountOfWordsForEachLetter.entrySet().stream().sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).findFirst().get();
+
+      //replace the current letter guess with the new best letter guess
+      letterGuesses[i] = highestAmountOfWords.getKey();
+    }
+
+    keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+    attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
+    //if this text contains enough real words, then it is probably decrypted
+    if (WordUtils.doesTextContainRealWord(attemptedDecryption)) {
+      isTextDecrypted = true;
+    }
+
     printOutcome(attemptedDecryption, isTextDecrypted);
   }
 
@@ -197,87 +160,45 @@ public class Main {
       mostCommonCharactersInCypherText.add(FrequencyUtils.mostCommonCharacter(s));
     }
 
+    //the flag
     boolean isTextDecrypted = false;
+    //the current attempt at decryption
     String attemptedDecryption = "";
+    //the current guess as to what the key is
     String keyGuess = "";
 
     //Stores the (index of) the letter that each of the mostCommonCharactersInCypherText is being guessed as
     int[] letterGuesses = new int[keySize];
 
-    //
-    int currentLetterGuessNumber = 0;
-    //used to limit the amount of letters we check
-    int currentMaxBase = 5;
-    HashSet<String> previousGuesses = new HashSet<>();
+    for (int i = 0; i < letterGuesses.length; i++) {
+      HashMap<Integer, Integer> amountOfWordsForEachLetter = new HashMap<>();
+      for (int commonLetterIndex = 0; commonLetterIndex < CommonCharUtils.mostCommonCharacters.length; commonLetterIndex++) {
+        //update this letter guess
+        letterGuesses[i] = commonLetterIndex;
 
-    while (!isTextDecrypted && currentMaxBase <= 26) {
-      keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
-
-      //attempt decryption
-      attemptedDecryption  = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-
-      //add the common letter guess to set of previous guesses
-      //converted to a string so that previousGuesses.contains() works correctly
-      previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
-
-      if (WordUtils.doesTextContainRealWord(attemptedDecryption, 10)) { //if deciphered
-        isTextDecrypted = true;
-      } else if (WordUtils.doesTextContainPartialWords(attemptedDecryption)) { //if we're close to the solution
-        for (int i = 0; i < letterGuesses.length; i++) {
-          HashMap<Integer, Integer> amountOfWordsForEachLetter = new HashMap<>();
-          for (int commonLetterIndex = 0; commonLetterIndex < CommonCharUtils.mostCommonCharacters.length; commonLetterIndex++) {
-            //update this letter guess
-            letterGuesses[i] = commonLetterIndex;
-
-            //create a new key
-            keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
-
-            //attempt decryption
-            attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-
-            //add the attempted letter guesses to previousGuesses
-            previousGuesses.add(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""));
-
-            //put the amount of words this guess decrypted into the set
-            amountOfWordsForEachLetter.put(commonLetterIndex, WordUtils.getAmountOfPartialAndRealWords(attemptedDecryption));
-          }
-
-          Entry<Integer, Integer> highestAmountOfWords = amountOfWordsForEachLetter.entrySet().stream()
-              .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
-              .findFirst()
-              .get();
-
-          //replace the current letter guess with the new best letter guess
-          letterGuesses[i] = highestAmountOfWords.getKey();
-        }
-
+        //create a new key
         keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+
+        //attempt decryption
         attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
-        //if this text contains enough real words, then it is probably decrypted
-        if (WordUtils.doesTextContainRealWord(attemptedDecryption)) {
-          isTextDecrypted = true;
-        }
-      } else { //if not deciphered
-          while (previousGuesses.contains(Arrays.toString(letterGuesses).replaceAll("\\[|\\]|,|\\s", ""))) {
-            //increment the number used to retrieve the common letter guesses
-            currentLetterGuessNumber++;
-            //If it's the max number in a base
-            if (currentLetterGuessNumber == Math.pow(currentMaxBase, keySize)) {
-              //increase the base
-              currentMaxBase++;
-              //reset the common letter guess
-              currentLetterGuessNumber = 0;
-            }
 
-            String newMostCommonLetterGuessesString = Integer.toString(currentLetterGuessNumber, currentMaxBase);
-
-            for (int i = newMostCommonLetterGuessesString.length() - 1; i >= 0; i--) {
-              int shift = letterGuesses.length - newMostCommonLetterGuessesString.length();
-              letterGuesses[i + shift] = newMostCommonLetterGuessesString.toCharArray()[i] - '0';
-            }
-          }
-        }
+        //put the amount of words this guess decrypted into the set
+        amountOfWordsForEachLetter.put(commonLetterIndex, WordUtils.getAmountOfPartialAndRealWords(attemptedDecryption));
       }
+
+      Entry<Integer, Integer> highestAmountOfWords = amountOfWordsForEachLetter.entrySet().stream().sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).findFirst().get();
+
+      //replace the current letter guess with the new best letter guess
+      letterGuesses[i] = highestAmountOfWords.getKey();
+    }
+
+    keyGuess = VigenereCypher.createNewKeyGuess(mostCommonCharactersInCypherText, letterGuesses);
+    attemptedDecryption = VigenereCypher.decryptVigenereCypher(cypherText, keyGuess);
+    //if this text contains enough real words, then it is probably decrypted
+    if (WordUtils.doesTextContainRealWord(attemptedDecryption)) {
+      isTextDecrypted = true;
+    }
+
     printOutcome(attemptedDecryption, isTextDecrypted);
   }
 
@@ -299,7 +220,7 @@ public class Main {
       for (int i = 0; i < keySize; i++) {
         keyGuess += (char) ('A' + i);
       }
-      
+
       decryptedText = TranspositionCipher.decrypt(cypherText, keyGuess);
 
       if (WordUtils.doesTextContainRealWord(decryptedText)) {
@@ -376,7 +297,6 @@ public class Main {
     boolean isTextDecrypted = false;
     HashSet<Character> correctCharacters = new HashSet<>();
 
-
     while (!isTextDecrypted && correctCharacters.size() < 26) {
       //attempt decryption
       decryptedText = SubstitutionCypher.decrypt(cypherText, cypherCharToPlainChar);
@@ -390,17 +310,9 @@ public class Main {
       Entry<Character, Character> charsToSwap = SubstitutionCypher.findCharactersToSwap(decryptedText, correctCharacters);
 
       //find the char that maps to N
-      char charToSwap = cypherCharToPlainChar.entrySet().stream()
-          .filter(entry -> entry.getValue() == charsToSwap.getKey())
-          .findFirst()
-          .get()
-          .getKey();
+      char charToSwap = cypherCharToPlainChar.entrySet().stream().filter(entry -> entry.getValue() == charsToSwap.getKey()).findFirst().get().getKey();
       //find the char that maps to H
-      char otherCharToSwap = cypherCharToPlainChar.entrySet().stream()
-          .filter(entry -> entry.getValue() == charsToSwap.getValue())
-          .findFirst()
-          .get()
-          .getKey();
+      char otherCharToSwap = cypherCharToPlainChar.entrySet().stream().filter(entry -> entry.getValue() == charsToSwap.getValue()).findFirst().get().getKey();
 
       cypherCharToPlainChar.put(charToSwap, charsToSwap.getValue());
       cypherCharToPlainChar.put(otherCharToSwap, charsToSwap.getKey());
