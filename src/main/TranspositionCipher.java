@@ -1,34 +1,33 @@
 package main;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import main.utils.WordUtils;
 
 public class TranspositionCipher {
 
+  /**
+   * decrypts cipherText for a transposition cipher given a certain key
+   * @param cipherText the text to decrypt
+   * @param key the key to use for decryption
+   * @return the decrypted text
+   */
   public static String decrypt(String cipherText, String key) {
     //convert key to number
     List<Integer> keyAsIntArray = convertKeyToInteger(key);
 
     //Split cipher text into chunks
-    List<String> separatedCipher = WordUtils.splitCypherTextColumnWise(cipherText, key.length());
+    List<String> separatedCipher = WordUtils.splitCipherTextColumnWise(cipherText, key.length());
 
     //TreeMaps are sorted by the key by default
     Map<Integer, List<Character>> cipherChunkByKey = new TreeMap<>();
 
     for (int i = 0; i < keyAsIntArray.size(); i++) {
-      //turn each cipher chunk into a hashmap of itself and it's corresponding character in the key
+      //turn each cipher chunk into a hashmap where the key is a character in the current key guess and the value is the cipher chunK
       ArrayList<Character> cipherChunkAsChars = new ArrayList<>();
       for (Character c : separatedCipher.get(i).toCharArray()) {
         cipherChunkAsChars.add(c);
@@ -40,16 +39,23 @@ public class TranspositionCipher {
     //for max length in separatedCipher
     //for each char in key
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < cipherChunkByKey.values().iterator().next().size(); i++) { //max length in split text
-      for (List<Character> characters : cipherChunkByKey.values()) {//each list in split text
-        sb.append(characters.get(i)); //
+    //max length in split text
+    for (int i = 0; i < cipherChunkByKey.values().iterator().next().size(); i++) {
+      //each list in split text
+      for (List<Character> characters : cipherChunkByKey.values()) {
+        sb.append(characters.get(i));
       }
     }
 
     return sb.toString();
-
   }
 
+  /**
+   * convert each letter in the key to it's int counterpart
+   * A -> 0, B -> 1, etc.
+   * @param key the key to convert
+   * @return a list of integers representing the key
+   */
   private static List<Integer> convertKeyToInteger(String key) {
     List<Integer> keyAsIntArray = new ArrayList<>(key.length());
 
@@ -68,6 +74,7 @@ public class TranspositionCipher {
         if (keyAsIntArray.get(i).equals(lowestDuplicate) && !firstDuplicateFound) {
           //Don't update the first duplicate but mark the first duplicate as found
           firstDuplicateFound = true;
+        //for all other numbers greater than the lowest duplicate, increment them
         } else if (keyAsIntArray.get(i) >= lowestDuplicate) {
           keyAsIntArray.set(i, keyAsIntArray.get(i) + 1);
         }
@@ -79,13 +86,21 @@ public class TranspositionCipher {
     return keyAsIntArray;
   }
 
+  /**
+   * finds the lowest duplicate number in a list of integers
+   * @param integers the list to search
+   * @return the lowest duplicate
+   */
   private static Integer findLowestDuplicate(List<Integer> integers) {
     Set<Integer> setToReturn = new HashSet<>();
     Set<Integer> setToNotReturn = new HashSet<>();
 
-    for (Integer i: integers) { //for all the ints
-      if (!setToNotReturn.add(i)) { //attempt to add the current int to the set, if it already exists in the set, Set.add returns false
-        setToReturn.add(i); //if the int is already in the other set, add it to this set
+    //for all the ints
+    for (Integer i: integers) {
+      //attempt to add the current int to the set, if it already exists in the set, Set.add returns false
+      if (!setToNotReturn.add(i)) {
+        //if the int is already in the other set, add it to this set
+        setToReturn.add(i);
       }
     }
     //return the lowest number in the set

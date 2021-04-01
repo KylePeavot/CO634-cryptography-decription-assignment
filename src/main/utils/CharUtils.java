@@ -6,6 +6,14 @@ import java.util.stream.Collectors;
 
 public class CharUtils {
 
+  /**
+   * shifts a character by a given amount
+   * A, 2 -> C
+   * Z, 1, -> A
+   * @param characterToShift the character to shift
+   * @param shift the amount to shift the character by
+   * @return the shifted character
+   */
   public static char shiftChar(char characterToShift, int shift) {
     characterToShift += shift;
 
