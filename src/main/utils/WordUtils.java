@@ -24,12 +24,15 @@ public class WordUtils {
    */
   public static boolean doesTextContainRealWord(String textToCheck, int wordsRequired) {
     int wordsFound = 0;
+    int maxWindowSize = Math.min(textToCheck.length(), 6);
+    int charsInTextToCheck = Math.min(textToCheck.length() - maxWindowSize, 101);
     //Checks a scrolling window of 4 to 6 characters (avg length of top 5000 chars is 6.32) throughout the first 100 characters of the text
     //If enough real words are found, the text has (probably) been decoded
-    for (int i = 4; i <= 6; i++) { //the size of the char window to check
-      for (int currentCharStart = 0; currentCharStart < 101; currentCharStart++) { //loop through the first 100 characters of the text to check (to save time)
+
+    for (int i = 4; i <= maxWindowSize; i++) { //the size of the char window to check
+      for (int currentCharStart = 0; currentCharStart <= charsInTextToCheck; currentCharStart++) { //loop through the first 100 characters of the text to check (to save time)
         if (isStringRealWord(textToCheck.substring(currentCharStart, currentCharStart + i).toLowerCase())) {
-          if (wordsFound++ > wordsRequired) {
+          if (++wordsFound >= wordsRequired) {
             return true;
           }
         }

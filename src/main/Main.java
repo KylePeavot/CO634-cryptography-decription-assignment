@@ -340,7 +340,7 @@ public class Main {
    */
   public static void printOutcome(String decryptedText, boolean success) {
     System.out.println("Decryption was a " + (success ? "success!" : "failure..."));
-    System.out.println(decryptedText.substring(0, 30));
+    System.out.println(decryptedText.substring(0, Math.min(decryptedText.length(), 30)));
   }
 
   /**
